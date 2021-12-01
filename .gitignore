@@ -11,5 +11,6 @@ docker/traefik/certs/*.*
 docker/keycloak/backup/
 docker/keycloak/data/
 docker/transmission/data/
+docker/postgres/data/postgresql
 
 !**/.gitkeep

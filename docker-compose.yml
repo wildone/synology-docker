@@ -46,26 +46,31 @@ services:
     depends_on:
       - traefik
 
-  keycloak-db:
+  postgres:
     extends:
-      file: ./docker/keycloak/docker-compose.yml
-      service: keycloak-db
+      file: ./docker/postgres/docker-compose.yml
+      service: postgres
+    volumes:
+      - ./docker/postgres/data/postgresql:/var/lib/postgresql/data
+      - ./docker/postgres/config/postgresql.conf:/etc/postgresql/postgresql.conf
     depends_on:
       - traefik
 
-  keycloak-db-admin:
+  postgres-admin:
     extends:
-      file: ./docker/keycloak/docker-compose.yml
-      service: keycloak-db-admin
+      file: ./docker/postgres/docker-compose.yml
+      service: postgres-admin
     depends_on:
       - traefik
+      - postgres
 
-  keycloak-db-backup:
+  postgres-backup:
     extends:
-      file: ./docker/keycloak/docker-compose.yml
-      service: keycloak-db-backup
+      file: ./docker/postgres/docker-compose.yml
+      service: postgres-backup
     depends_on:
       - traefik
+      - postgres
 
   keycloak:
     extends:
