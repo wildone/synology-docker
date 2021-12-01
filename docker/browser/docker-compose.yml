@@ -24,7 +24,8 @@ services:
       traefik.http.services.transmission.loadbalancer.passHostHeader: true
       traefik.http.services.transmission.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
     volumes:
-      - ./config/custom_config.php:/var/www/html/proxy/custom_config.php
+      - ./config/custom_config.php:/var/www/html/proxy/custom_config.php:ro
+      - ./config/proxy.conf:/etc/apache2/sites-enabled/000-default.conf:ro
     ports:
       - ${PROXY_BROWSER_PORT_HTTP}:80
     #   - ${PROXY_BROWSER_PORT_HTTPS}:443
