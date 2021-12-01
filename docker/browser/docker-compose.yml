@@ -1,0 +1,30 @@
+version: "2.4"
+
+services:
+
+  browser:
+    image: dwaaan/php-proxy:latest
+    restart: always
+    extends:
+      file: ../common/config-tz.yml
+      service: config
+    hostname: browser
+    environment:
+      - HTTP_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
+      - HTTPS_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.port: ${PROXY_BROWSER_PORT_HTTP}
+      traefik.http.routers.transmission.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission.entrypoints: web
+      traefik.http.routers.transmission_https.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission_https.tls: true
+      traefik.http.routers.transmission_https.entrypoints: websecure
+      traefik.http.services.transmission.loadbalancer.passHostHeader: true
+      traefik.http.services.transmission.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+    volumes:
+      - ./config/custom_config.php:/var/www/html/proxy/custom_config.php
+    ports:
+      - ${PROXY_BROWSER_PORT_HTTP}:80
+    #   - ${PROXY_BROWSER_PORT_HTTPS}:443
