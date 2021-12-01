@@ -1,0 +1,88 @@
+version: "2.4"
+
+services:
+
+  nginx:
+    extends:
+      file: ./docker/nginx/docker-compose.yml
+      service: nginx
+    volumes:
+      - ./docker/nginx/content:/content
+      - ./docker/nginx/config/nginx.conf:/etc/nginx/nginx.conf
+
+  createcert:
+    extends:
+      file: ./docker/traefik/docker-compose.yml
+      service: createcert
+    volumes:
+      - ./docker/traefik/certs:/root/.local/share/mkcert
+
+  createcertpkcs12:
+    extends:
+      file: ./docker/traefik/docker-compose.yml
+      service: createcertpkcs12
+    depends_on:
+      - createcert
+    volumes:
+      - ./docker/traefik/certs:/export
+
+  traefik:
+    extends:
+      file: ./docker/traefik/docker-compose.yml
+      service: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Persist certificates, so we can restart as often as needed
+      - ./docker/traefik/certs:/letsencrypt
+      - ./docker/traefik/config/dynamic:/etc/traefik/dynamic_conf:ro
+    depends_on:
+      - createcert
+      - createcertpkcs12
+
+  traefik-forward-auth:
+    extends:
+      file: ./docker/traefik/docker-compose.yml
+      service: traefik-forward-auth
+    depends_on:
+      - traefik
+
+  keycloak-db:
+    extends:
+      file: ./docker/keycloak/docker-compose.yml
+      service: keycloak-db
+    depends_on:
+      - traefik
+
+  keycloak-db-admin:
+    extends:
+      file: ./docker/keycloak/docker-compose.yml
+      service: keycloak-db-admin
+    depends_on:
+      - traefik
+
+  keycloak-db-backup:
+    extends:
+      file: ./docker/keycloak/docker-compose.yml
+      service: keycloak-db-backup
+    depends_on:
+      - traefik
+
+  keycloak:
+    extends:
+      file: ./docker/keycloak/docker-compose.yml
+      service: keycloak
+    depends_on:
+      - traefik
+
+  transmission:
+    extends:
+      file: ./docker/transmission/docker-compose.yml
+      service: transmission
+    depends_on:
+      - traefik
+
+networks:
+  internal:
+  traefik:
+  keycloak:
+
