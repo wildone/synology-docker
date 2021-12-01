@@ -1,0 +1,10 @@
+_site
+.sass-cache/
+.jekyll-metadata
+.jekyll-cache/
+.idea
+Gemfile.lock
+.ssl/
+*.iml
+Thumbs.db
+traefik/certs/*.*
