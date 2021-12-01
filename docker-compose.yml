@@ -81,6 +81,15 @@ services:
     depends_on:
       - traefik
 
+  browser:
+    extends:
+      file: ./docker/browser/docker-compose.yml
+      service: browser
+    volumes:
+      - ./docker/browser/config/custom_config.php:/var/www/html/proxy/custom_config.php:ro
+    depends_on:
+      - traefik
+
 networks:
   internal:
   traefik:
