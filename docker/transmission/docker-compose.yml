@@ -1,0 +1,40 @@
+version: "2.4"
+
+services:
+
+  transmission:
+    image: haugene/transmission-openvpn
+    restart: always
+    extends:
+      file: ../common/config-tz.yml
+      service: config
+    hostname: transmission
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.port: ${TRANSMISSION_PORT}
+      traefik.http.routers.transmission.rule: "Host(`${TRANSMISSION_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission.entrypoints: web
+      traefik.http.routers.transmission_https.rule: "Host(`${TRANSMISSION_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission_https.tls: true
+      traefik.http.routers.transmission_https.entrypoints: websecure
+      traefik.http.services.transmission.loadbalancer.passHostHeader: true
+      traefik.http.services.transmission.loadbalancer.server.port: ${TRANSMISSION_PORT}
+    volumes:
+      - ${TRANSMISSION_DATA_PATH}:/data
+    environment:
+        - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER}
+        # - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG}
+        - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME}
+        - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD}
+        - LOCAL_NETWORK=${TRANSMISSION_LOCAL_NETWORK}
+    logging:
+        driver: json-file
+        options:
+            max-size: 10m
+    ports:
+      - ${TRANSMISSION_PORT}:${TRANSMISSION_INTERNAL_PORT}
+      - ${TRANSMISSION_PROXY_PORT}:${TRANSMISSION_INTERNAL_PROXY_PORT}
+    cap_add:
+      - NET_ADMIN
+
