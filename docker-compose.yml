@@ -87,6 +87,7 @@ services:
       service: browser
     volumes:
       - ./docker/browser/config/custom_config.php:/var/www/html/proxy/custom_config.php:ro
+      - ./docker/browser/config/proxy.conf:/etc/apache2/sites-enabled/000-default.conf:ro
     depends_on:
       - traefik
 
