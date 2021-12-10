@@ -5,9 +5,6 @@ services:
   transmission:
     image: haugene/transmission-openvpn
     restart: always
-    extends:
-      file: ../common/config-tz.yml
-      service: config
     hostname: transmission
     labels:
       traefik.frontend.priority: 1
@@ -23,18 +20,19 @@ services:
     volumes:
       - ${TRANSMISSION_DATA_PATH}:/data
     environment:
-        - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER}
-        - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG}
-        - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME}
-        - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD}
-        - LOCAL_NETWORK=${TRANSMISSION_LOCAL_NETWORK}
-        - TRANSMISSION_RPC_PORT=${TRANSMISSION_PORT}
-        - WEBPROXY_ENABLED=${TRANSMISSION_WEBPROXY_ENABLED}
-        - WEBPROXY_PORT=${TRANSMISSION_WEBPROXY_PORT}
+      - TZ=${GLOBAL_TZ}
+      - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER}
+      - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG}
+      - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME}
+      - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD}
+      - LOCAL_NETWORK=${TRANSMISSION_LOCAL_NETWORK}
+      - TRANSMISSION_RPC_PORT=${TRANSMISSION_PORT}
+      - WEBPROXY_ENABLED=${TRANSMISSION_WEBPROXY_ENABLED}
+      - WEBPROXY_PORT=${TRANSMISSION_WEBPROXY_PORT}
     logging:
-        driver: json-file
-        options:
-            max-size: 10m
+      driver: json-file
+      options:
+        max-size: 10m
     ports:
       - ${TRANSMISSION_PORT}:${TRANSMISSION_PORT}
       - ${TRANSMISSION_WEBPROXY_PORT}:${TRANSMISSION_WEBPROXY_PORT}

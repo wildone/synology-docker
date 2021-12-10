@@ -13,6 +13,7 @@ services:
       - ./data/postgresql:/var/lib/postgresql/data
       - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
     environment:
+      - TZ=${GLOBAL_TZ}
       - POSTGRES_USER=${POSTGRES_DB_USER}
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
     command: ["postgres", "-c", "log_min_messages=${POSTGRES_LOG_MIN_MESSAGES}"]
@@ -29,6 +30,7 @@ services:
     ports:
       - ${POSTGRES_DB_ADMIN_PORT}:${POSTGRES_DB_ADMIN_PORT}
     environment:
+      - TZ=${GLOBAL_TZ}
       - PGADMIN_LISTEN_PORT=${POSTGRES_DB_ADMIN_PORT}
       - PGADMIN_DEFAULT_EMAIL=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_PASSWORD}
@@ -48,6 +50,7 @@ services:
       - ${KEYCLOAK_BACKUP_PATH}:/dump
 #      - /etc/localtime:/etc/localtime:ro
     environment:
+      - TZ=${GLOBAL_TZ}
       - PGHOST=keycloak-db
       - PGUSER=${DB_USER}
       - PGPASSWORD=${DB_PASSWORD}

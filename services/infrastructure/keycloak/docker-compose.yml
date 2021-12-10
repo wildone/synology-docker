@@ -7,15 +7,13 @@ services:
   #   image: quay.io/keycloak/keycloak:latest
     image: jboss/keycloak
     container_name: keycloak
-    extends:
-      file: ../common/config-tz.yml
-      service: config
     domainname: "${DOMAIN_NAME}"
     ports:
       - ${KEYCLOAK_PORT}:${KEYCLOAK_PORT}
     networks:
       - traefik
     environment:
+      - TZ=${GLOBAL_TZ}
       - PUID=1000
       - PGID=1000
       - KEYCLOAK_LOGLEVEL=WARNING

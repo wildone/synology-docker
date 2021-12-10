@@ -10,6 +10,7 @@ services:
       service: config
     hostname: browser
     environment:
+      - TZ=${GLOBAL_TZ}
       - HTTP_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
       - HTTPS_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
     labels:

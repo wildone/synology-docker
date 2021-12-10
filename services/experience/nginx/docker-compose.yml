@@ -5,9 +5,6 @@ services:
   nginx:
     image: nginx
     restart: always
-    extends:
-      file: ../common/config-tz.yml
-      service: config
     working_dir: /content
     hostname: "nginx"
     labels:
@@ -21,6 +18,8 @@ services:
     volumes:
       - ./content:/content
       - ./config/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - TZ=${GLOBAL_TZ}
     networks:
       - internal
 
