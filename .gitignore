@@ -7,8 +7,9 @@ logs
 services/infrastructure/traefik/certs/*.*
 services/infrastructure/keycloak/backup/
 services/infrastructure/keycloak/data/
-services/experience/transmission/data/
+services/experience/transmission/data/transmission-home/
 services/data/postgres/data/postgresql
+services/data/postgres/backup/
 
 #git config
 !**/.gitkeep
