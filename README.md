@@ -22,8 +22,10 @@ Linux:
 ./start
 ```
 
-Windows run powershell core:
+Windows in powershell core:
 
 ```powershell
 ./start
 ```
+
+By default console page will be on `https://localhost:5443/`.
