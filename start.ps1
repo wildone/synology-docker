@@ -1,11 +1,14 @@
 Param(
+  [string]$LOG_PATH = ".\logs",
+  [string]$LOG_PEFIX = "start",
+  [string]$LOG_SUFFIX = ".log",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
   [string]$SERVICES = "$( (Get-Content ".\start-services.conf") -join " -f ")",
   [string]$PORT = "5080"
 )
 
 $SKIP_CONFIG = $true
-$PARENT_PROJECT_PATH = ".."
+$PARENT_PROJECT_PATH = "."
 
 . ([Scriptblock]::Create((([System.Text.Encoding]::ASCII).getString((Invoke-WebRequest -Uri "${FUNCTIONS_URI}").Content))))
 
