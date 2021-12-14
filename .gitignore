@@ -1,16 +1,14 @@
-_site
-.sass-cache/
-.jekyll-metadata
-.jekyll-cache/
-.idea
-Gemfile.lock
-.ssl/
-*.iml
-Thumbs.db
-docker/traefik/certs/*.*
-docker/keycloak/backup/
-docker/keycloak/data/
-docker/transmission/data/
-docker/postgres/data/postgresql
 
+#runtime
+logs
+
+
+#services
+services/infrastructure/traefik/certs/*.*
+services/infrastructure/keycloak/backup/
+services/infrastructure/keycloak/data/
+services/experience/transmission/data/
+services/data/postgres/data/postgresql
+
+#git config
 !**/.gitkeep
