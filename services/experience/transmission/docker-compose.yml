@@ -38,4 +38,8 @@ services:
       - ${TRANSMISSION_WEBPROXY_PORT}:${TRANSMISSION_WEBPROXY_PORT}
     cap_add:
       - NET_ADMIN
+    networks:
+      - internal
 
+networks:
+  internal:

@@ -6,6 +6,8 @@ services:
     image: postgres
     hostname: postgres
     restart: always
+    depends_on:
+      - "traefik"
     volumes:
       - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
       - ${POSTGRES_CONFIG_FILE}:/etc/postgresql/postgresql.conf
@@ -15,12 +17,14 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
     command: ["postgres", "-c", "log_min_messages=${POSTGRES_LOG_MIN_MESSAGES}"]
     networks:
-      - keycloak
+      - internal
 
   postgres-admin:
     image: dpage/pgadmin4
     hostname: postgres-admin
     restart: always
+    depends_on:
+      - "postgres"
     ports:
       - ${POSTGRES_DB_ADMIN_PORT}:${POSTGRES_DB_ADMIN_PORT}
     environment:
@@ -29,14 +33,16 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_PASSWORD}
     networks:
-      - keycloak
+      - internal
 
 
   postgres-backup:
     image: postgres
     hostname: postgres-backup
+    depends_on:
+      - "postgres"
     networks:
-      - keycloak
+      - internal
     volumes:
       - ${POSTGRES_BACKUP_PATH}:/dump
 #      - /etc/localtime:/etc/localtime:ro
@@ -58,9 +64,5 @@ services:
       done
       EOF'
 
-
-
 networks:
-  keycloak:
-  traefik:
   internal:

@@ -6,12 +6,12 @@ services:
   keycloak:
   #   image: quay.io/keycloak/keycloak:latest
     image: jboss/keycloak
-    container_name: keycloak
+    hostname: keycloak
     domainname: "${DOMAIN_NAME}"
+    depends_on:
+      - "postgres"
     ports:
       - ${KEYCLOAK_PORT}:${KEYCLOAK_PORT}
-    networks:
-      - traefik
     environment:
       - TZ=${GLOBAL_TZ}
       - PUID=1000
@@ -50,10 +50,9 @@ services:
       - "traefik.http.routers.keycloak.tls=true"
       - "traefik.http.routers.keycloak.tls.certresolver=leresolver"
       - "traefik.http.routers.keycloak.tls.domains[0].main=${DOMAIN_NAME}"
-      - "traefik.http.routers.keycloak.tls.domains[0].sans=*.${DOMAINNAME}"
-
+      - "traefik.http.routers.keycloak.tls.domains[0].sans=*.${DOMAIN_NAME}"
+    networks:
+      - internal
 
 networks:
-  keycloak:
-  traefik:
   internal:

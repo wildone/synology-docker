@@ -27,3 +27,8 @@ services:
     ports:
       - ${PROXY_BROWSER_PORT_HTTP}:80
     #   - ${PROXY_BROWSER_PORT_HTTPS}:443
+    networks:
+      - internal
+
+networks:
+  internal:
