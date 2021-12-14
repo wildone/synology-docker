@@ -1,4 +1,7 @@
 Param(
+  [string]$LOG_PATH = ".\logs",
+  [string]$LOG_PEFIX = "clean",
+  [string]$LOG_SUFFIX = ".log",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
   [array]$CLEAN_PATHS = (Get-Content ".\clean-paths.conf")
 )
