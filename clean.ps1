@@ -14,7 +14,9 @@ $PARENT_PROJECT_PATH = "."
 printSubSectionStart "Remove data paths"
 
 Foreach ($REMOVE_PATH in $CLEAN_PATHS) {
-  printSectionLine "Removing ${REMOVE_PATH}"
-  Remove-Item –path $REMOVE_PATH –recurse -ErrorAction SilentlyContinue
+  if ( (-Not ([string]::IsNullOrEmpty(${REMOVE_PATH}))) -AND ( -Not (${REMOVE_PATH}.StartsWith("#")) ) ) {
+    printSectionLine "Removing ${REMOVE_PATH}"
+    Remove-Item –path $REMOVE_PATH –recurse -ErrorAction SilentlyContinue
+  }
 }
 
