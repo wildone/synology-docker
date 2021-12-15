@@ -4,7 +4,7 @@
           "Name": "Postrgres",
           "Group": "Servers",
           "Port": 5432,
-          "Username": "postgresadmin",
+          "Username": "postgres",
           "Host": "postgres",
           "SSLMode": "prefer",
           "MaintenanceDB": "postgres",
