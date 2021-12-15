@@ -10,7 +10,7 @@ services/infrastructure/keycloak/data/
 services/experience/transmission/data/transmission-home/
 services/data/postgres/data/postgresql
 services/data/postgres/data/pgadmin
-services/data/postgres/backup/
+services/data/postgres/data/backup
 
 #git config
 !**/.gitkeep

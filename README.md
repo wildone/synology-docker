@@ -29,3 +29,10 @@ Windows in powershell core:
 ```
 
 By default console page will be on `https://localhost:5443/`.
+
+## Restart clean stack
+
+
+```powershell
+./stop && ./clean && ./start
+```
