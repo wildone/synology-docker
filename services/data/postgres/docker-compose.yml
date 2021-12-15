@@ -11,10 +11,14 @@ services:
     volumes:
       - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
       - ${POSTGRES_CONFIG_FILE}:/etc/postgresql/postgresql.conf
+      - ${POSTGRES_DB_ADMIN_CONFIG_CREATEUSER_FILE}:/docker-entrypoint-initdb.d/createuser.sh
+      - ${POSTGRES_DB_ADMIN_CONFIG_ALTERUSERPASSWORD_FILE}:/docker-entrypoint-initdb.d/alteruserpassword.sh
+      - ${ENV_FILE}:/usr/local/env:ro
     environment:
       - TZ=${GLOBAL_TZ}
       - POSTGRES_USER=${POSTGRES_DB_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - POSTGRES_PASSWORD=willbeoverwritten
+      - ENV_FILE=/usr/local/env
     command: ["postgres", "-c", "log_min_messages=${POSTGRES_LOG_MIN_MESSAGES}"]
     networks:
       - internal
@@ -38,7 +42,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_PASSWORD}
     volumes:
-      - ${POSTGRES_DB_ADMIN_DATA_PATH}:/var/lib/pgadmin
+      - ${POSTGRES_DB_ADMIN_DATA_PATH}:/var/lib/pgadmin:rw
       - ${POSTGRES_DB_ADMIN_CONFIG_SERVERS_FILE}:/pgadmin4/servers.json
       - ${POSTGRES_DB_ADMIN_CONFIG_PGPASSCONFIG_FILE}:/pgadmin4/pgpassconfig.sh
       - ${ENV_FILE}:/pgadmin4/env:ro
@@ -68,7 +72,7 @@ services:
 #      - /etc/localtime:/etc/localtime:ro
     environment:
       - TZ=${GLOBAL_TZ}
-      - PGHOST=keycloak-db
+      - PGHOST=postgres
       - PGUSER=${POSTGRES_DB_USER}
       - PGPASSWORD=${POSTGRES_DB_PASSWORD}
       - BACKUP_NUM_KEEP=7
