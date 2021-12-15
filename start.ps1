@@ -4,7 +4,9 @@ Param(
   [string]$LOG_SUFFIX = ".log",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
   [string]$SERVICES = "$( (Get-Content ".\start-services.conf") -join " -f ")",
-  [string]$PORT = "5080"
+  [string]$PORT = "5080",
+  [Parameter(Position=0)]
+  [string]$SERVICE_NAME = "" # services to start
 )
 
 $SKIP_CONFIG = $true
@@ -17,7 +19,7 @@ $PARENT_PROJECT_PATH = "."
 $CONFIG_ENV = (Get-Content ".env" -Raw | ConvertFrom-StringData)
 $PORT=$CONFIG_ENV.TRAEFIK_HTTP_PORT
 
-$DOCKER_COMMAND="docker-compose --env-file .env -f docker-compose.yml -f ${SERVICES} up"
+$DOCKER_COMMAND="docker-compose --env-file .env -f docker-compose.yml -f ${SERVICES} up ${SERVICE_NAME}"
 
 $OPEN_COMMAND="explorer http://localhost:${PORT}"
 
