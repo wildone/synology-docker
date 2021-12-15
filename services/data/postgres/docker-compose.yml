@@ -23,6 +23,11 @@ services:
     image: dpage/pgadmin4
     hostname: postgres-admin
     restart: always
+    entrypoint: >
+      /bin/sh -c "
+      /pgadmin4/pgpassconfig.sh;
+      /entrypoint.sh
+      "
     depends_on:
       - "postgres"
     ports:
@@ -32,9 +37,24 @@ services:
       - PGADMIN_LISTEN_PORT=${POSTGRES_DB_ADMIN_PORT}
       - PGADMIN_DEFAULT_EMAIL=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${POSTGRES_DB_ADMIN_PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - ${POSTGRES_DB_ADMIN_DATA_PATH}:/var/lib/pgadmin
+      - ${POSTGRES_DB_ADMIN_CONFIG_SERVERS_FILE}:/pgadmin4/servers.json
+      - ${POSTGRES_DB_ADMIN_CONFIG_PGPASSCONFIG_FILE}:/pgadmin4/pgpassconfig.sh
+      - ${ENV_FILE}:/pgadmin4/env:ro
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.port: ${POSTGRES_DB_ADMIN_PORT}
+      traefik.http.routers.transmission.rule: "Host(`${POSTGRES_DB_ADMIN_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission.entrypoints: web
+      traefik.http.routers.transmission_https.rule: "Host(`${POSTGRES_DB_ADMIN_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.transmission_https.tls: true
+      traefik.http.routers.transmission_https.entrypoints: websecure
+      traefik.http.services.transmission.loadbalancer.passHostHeader: true
+      traefik.http.services.transmission.loadbalancer.server.port: ${POSTGRES_DB_ADMIN_PORT}
     networks:
       - internal
-
 
   postgres-backup:
     image: postgres
