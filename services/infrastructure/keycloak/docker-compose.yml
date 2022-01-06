@@ -11,7 +11,8 @@ services:
     depends_on:
       - "postgres"
     ports:
-      - ${KEYCLOAK_PORT}:9990
+      - ${KEYCLOAK_PORT}:8080
+      - ${KEYCLOAK_PORT_MANAGMENT}:9990
     volumes:
       - ${KEYCLOAK_CUSTOM_THEME_PATH}:/opt/jboss/keycloak/themes/customtheme
     environment:
@@ -26,35 +27,37 @@ services:
       - DB_VENDOR=${KEYCLOAK_DB_VENDOR}
       - DB_DATABASE=${KEYCLOAK_DB_DATABASE}
       - DB_ADDR=${KEYCLOAK_DB_ADDR}
-      - DB_USER=${POSTGRES_DB_USER}
-      - DB_PASSWORD=${POSTGRES_DB_PASSWORD}
-      - DB_PORT=${POSTGRES_PORT}
+      - DB_USER=${KEYCLOAK_DB_USER}
+      - DB_PASSWORD=${KEYCLOAK_DB_PASSWORD}
+      - DB_PORT=${KEYCLOAK_DB_PORT}
       # This is required to run keycloak behind traefik
       - PROXY_ADDRESS_FORWARDING=true
       - KEYCLOAK_HOSTNAME=${KEYCLOAK_SUBDOMAIN_NAME}.${DOMAIN_NAME}
       # Tell Postgress what user/password to create
-      - POSTGRES_USER=${POSTGRES_DB_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_DB_PASSWORD}
+      - POSTGRES_USER=${KEYCLOAK_DB_USER}
+      - POSTGRES_PASSWORD=${KEYCLOAK_DB_PASSWORD}
       - KEYCLOAK_WELCOME_THEME=${KEYCLOAK_WELCOME_THEME}
+    command: ["${KEYCLOAK_COMMAND}"]
     labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
-      - "traefik.backend=traefik"
-      # Define the URL to access this app
-      - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      # Access via HTTPS only
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      # The application (i.e. this container)
-      - "traefik.http.routers.keycloak.service=keycloak"
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.port: ${KEYCLOAK_PORT}
+      traefik.http.routers.keycloak.service: keycloak
+      traefik.http.routers.keycloak.rule: "Host(`${KEYCLOAK_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.keycloak.entrypoints: web
+      traefik.http.routers.keycloak_https.rule: "Host(`${KEYCLOAK_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.keycloak_https.tls: true
+      traefik.http.routers.keycloak_https.entrypoints: websecure
+      traefik.http.services.keycloak.loadbalancer.passHostHeader: true
+      traefik.http.services.keycloak.loadbalancer.server.port: ${KEYCLOAK_PORT}
       # Select middleware chain https-only and keycloakforwardauth
       #- "traefik.http.routers.keycloak.middlewares=keycloakForwardAuth"
       #- "traefik.http.routers.keycloak.middlewares=secured"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=${KEYCLOAK_PORT}"
       # TLS is used to protect the domain
-      - "traefik.http.routers.keycloak.tls=true"
-      - "traefik.http.routers.keycloak.tls.certresolver=leresolver"
-      - "traefik.http.routers.keycloak.tls.domains[0].main=${DOMAIN_NAME}"
-      - "traefik.http.routers.keycloak.tls.domains[0].sans=*.${DOMAIN_NAME}"
+      # - "traefik.http.routers.keycloak.tls=true"
+      # - "traefik.http.routers.keycloak.tls.certresolver=leresolver"
+      # - "traefik.http.routers.keycloak.tls.domains[0].main=${DOMAIN_NAME}"
+      # - "traefik.http.routers.keycloak.tls.domains[0].sans=*.${DOMAIN_NAME}"
     networks:
       - internal
 
