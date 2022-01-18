@@ -1,14 +1,26 @@
 {
   "Servers": {
       "1": {
-          "Name": "Postrgres",
+          "Name": "Postgres DB",
           "Group": "Servers",
           "Port": 5432,
           "Username": "postgres",
           "Host": "postgres",
           "SSLMode": "prefer",
           "MaintenanceDB": "postgres",
-          "PassFile": "/pgpass"
-      }
+          "PassFile": "/pgpass",
+          "DBRestriction": "postgres"
+      },
+      "2": {
+        "Name": "Keycloak DB",
+        "Group": "Servers",
+        "Port": 5432,
+        "Username": "keycloak",
+        "Host": "postgres",
+        "SSLMode": "prefer",
+        "MaintenanceDB": "keycloak",
+        "PassFile": "/pgpass",
+        "DBRestriction": "keycloak"
+    }
   }
 }
