@@ -14,13 +14,14 @@ services:
       traefik.frontend.priority: 1
       traefik.enable: true
       traefik.port: ${PROXY_BROWSER_PORT_HTTP}
-      traefik.http.routers.transmission.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.transmission.entrypoints: web
-      traefik.http.routers.transmission_https.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.transmission_https.tls: true
-      traefik.http.routers.transmission_https.entrypoints: websecure
-      traefik.http.services.transmission.loadbalancer.passHostHeader: true
-      traefik.http.services.transmission.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+      traefik.http.routers.browser.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.browser.entrypoints: web
+      traefik.http.routers.browser_https.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.browser_https.tls: true
+      traefik.http.routers.browser_https.entrypoints: websecure
+      traefik.http.services.browser.loadbalancer.passHostHeader: true
+      traefik.http.services.browser.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+      traefik.http.routers.browser.middlewares: keycloakForwardAuth
     volumes:
       - ${PROXY_BROWSER_CONFIG_CUSTOM_FILE}:/var/www/html/proxy/custom_config.php:ro
       - ${PROXY_BROWSER_CONFIG_FILE}:/etc/apache2/sites-enabled/000-default.conf:ro

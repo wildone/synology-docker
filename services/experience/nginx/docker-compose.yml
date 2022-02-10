@@ -10,11 +10,11 @@ services:
     labels:
       - "traefik.frontend.priority=1"
       - "traefik.enable=true"
-      - "traefik.http.routers.www.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.www.entrypoints=web"
-      - "traefik.http.routers.www_https.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.www_https.tls=true"
-      - "traefik.http.routers.www_https.entrypoints=websecure"
+      - "traefik.http.routers.nginx.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.nginx.entrypoints=web"
+      - "traefik.http.routers.nginx_https.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.nginx_https.tls=true"
+      - "traefik.http.routers.nginx_https.entrypoints=websecure"
     volumes:
       - ${NGINX_CONTENT_PATH}:/content
       - ${NGINX_CONFIG_FILE}:/etc/nginx/nginx.conf
