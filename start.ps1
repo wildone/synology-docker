@@ -3,7 +3,7 @@ Param(
   [string]$LOG_PEFIX = "start",
   [string]$LOG_SUFFIX = ".log",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
-  [string]$SERVICES = "$( (Get-Content ".\start-services.conf") -join " -f ")",
+  [string]$SERVICES = "$( (Get-Content ".\start-services.conf" | Where-Object {$_ -notmatch '^#.*'} ) -join " --file ")",
   [string]$PORT = "5080",
   [Parameter(Position=0)]
   [string]$SERVICE_NAME = "" # services to start
@@ -19,14 +19,17 @@ $PARENT_PROJECT_PATH = "."
 $CONFIG_ENV = (Get-Content ".env" -Raw | ConvertFrom-StringData)
 $PORT=$CONFIG_ENV.TRAEFIK_HTTP_PORT
 
-$DOCKER_COMMAND="docker-compose --env-file .env -f docker-compose.yml -f ${SERVICES} up ${SERVICE_NAME}"
+$DOCKER_COMMAND="docker-compose --env-file .env --file docker-compose.yml --file ${SERVICES} up ${SERVICE_NAME}"
 
-$OPEN_COMMAND="explorer http://localhost:${PORT}"
+if ( [string]::IsNullOrEmpty(${SERVICE_NAME}) ) {
 
-printSubSectionStart "Open Console at http://localhost:${PORT}"
+  $OPEN_COMMAND="explorer http://localhost:${PORT}"
 
-Invoke-Expression "${OPEN_COMMAND}"
+  printSubSectionStart "Open Console at http://localhost:${PORT}"
 
+  Invoke-Expression "${OPEN_COMMAND}"
+
+}
 
 printSubSectionStart "Docker Compose Execute"
 
