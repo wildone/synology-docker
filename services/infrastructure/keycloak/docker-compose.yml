@@ -59,7 +59,10 @@ services:
       # - "traefik.http.routers.keycloak.tls.domains[0].main=${DOMAIN_NAME}"
       # - "traefik.http.routers.keycloak.tls.domains[0].sans=*.${DOMAIN_NAME}"
     networks:
-      - internal
+      internal:
+        aliases:
+          - ${KEYCLOAK_SUBDOMAIN_NAME}
+          - ${KEYCLOAK_SUBDOMAIN_NAME}.${DOMAIN_NAME}
 
 networks:
   internal:
