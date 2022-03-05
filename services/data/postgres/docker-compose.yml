@@ -23,9 +23,9 @@ services:
     labels:
       traefik.enable: true
       traefik.tcp.services.postgres.loadbalancer.server.port: ${POSTGRES_PORT}
-      traefik.tcp.routers.postgres.entrypoints: postgres
-      traefik.tcp.routers.postgres.rule: HostSNI(`*`)
-      traefik.tcp.routers.postgres.service: postgres
+      # traefik.tcp.routers.postgres.entrypoints: postgres
+      # traefik.tcp.routers.postgres.rule: HostSNI(`*`)
+      # traefik.tcp.routers.postgres.service: postgres@docker
     networks:
       - internal
 
@@ -40,8 +40,8 @@ services:
       "
     depends_on:
       - "postgres"
-    ports:
-      - ${POSTGRES_DB_ADMIN_PORT}:${POSTGRES_DB_ADMIN_PORT}
+    # ports:
+    #   - ${POSTGRES_DB_ADMIN_PORT}:${POSTGRES_DB_ADMIN_PORT}
     environment:
       - TZ=${GLOBAL_TZ}
       - PGADMIN_LISTEN_PORT=${POSTGRES_DB_ADMIN_PORT}
@@ -56,8 +56,8 @@ services:
       traefik.frontend.priority: 1
       traefik.enable: true
       traefik.port: ${POSTGRES_DB_ADMIN_PORT}
-      traefik.http.routers.postgresadmin.rule: "Host(`${POSTGRES_DB_ADMIN_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.postgresadmin.entrypoints: web
+      # traefik.http.routers.postgresadmin.rule: "Host(`${POSTGRES_DB_ADMIN_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      # traefik.http.routers.postgresadmin.entrypoints: web
       traefik.http.routers.postgresadmin_https.rule: "Host(`${POSTGRES_DB_ADMIN_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
       traefik.http.routers.postgresadmin_https.tls: true
       traefik.http.routers.postgresadmin_https.entrypoints: websecure
