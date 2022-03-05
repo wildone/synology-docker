@@ -2,21 +2,43 @@ version: "3.8"
 
 services:
 
+  jekyllbuild:
+    image: jekyll/builder
+    environment:
+      - JEKYLL_ENV=production
+      - DOMAIN_URL=${DOMAIN_URL}
+      - GIT_REPO=${GIT_REPO}
+      - TRAEFIK_URL=${TRAEFIK_URL}
+      - TRANSMISSION_URL=${TRANSMISSION_URL}
+      - PROXY_BROWSER_URL=${PROXY_BROWSER_URL}
+      - POSTGRES_DB_ADMIN_URL=${POSTGRES_DB_ADMIN_URL}
+      - KEYCLOAK_URL=${KEYCLOAK_URL}
+      - KEYCLOAK_URL_ADMIN=${KEYCLOAK_URL_ADMIN}
+    command: bash -c " npm install -g sass && bundle update && bundler install && jekyll build --watch --force-polling --force_polling --incremental --future"
+    volumes:
+      - "${NGINX_CONTENT_PATH}:/srv/jekyll"
+
   nginx:
     image: nginx
     restart: always
     working_dir: /content
     hostname: "nginx"
+    depends_on:
+      - jekyllbuild
     labels:
-      - "traefik.frontend.priority=1"
-      - "traefik.enable=true"
-      - "traefik.http.routers.nginx.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.nginx.entrypoints=web"
-      - "traefik.http.routers.nginx_https.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.nginx_https.tls=true"
-      - "traefik.http.routers.nginx_https.entrypoints=websecure"
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      # traefik.backend: nginx
+      traefik.http.routers.nginx.rule: "PathPrefix(`/`)"
+      traefik.http.routers.nginx.entrypoints: websecure
+      traefik.http.routers.nginx.tls: true
+      # traefik.http.routers.nginx_https.service: nginx
+      # traefik.http.routers.nginx_https.rule: "PathPrefix(`/`)"
+      # traefik.http.routers.nginx_https.tls: true
+      # traefik.http.routers.nginx_https.entrypoints: websecure
+      # traefik.http.routers.nginx_https.service: nginx
     volumes:
-      - ${NGINX_CONTENT_PATH}:/content
+      - ${NGINX_CONTENT_PATH}/_site:/content
       - ${NGINX_CONFIG_FILE}:/etc/nginx/nginx.conf
     environment:
       - TZ=${GLOBAL_TZ}
