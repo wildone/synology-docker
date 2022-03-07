@@ -2,32 +2,41 @@ version: "3.8"
 
 services:
 
-  browser:
+  proxy:
     image: dwaaan/php-proxy:latest
     restart: always
     hostname: browser
     environment:
       - TZ=${GLOBAL_TZ}
-      - HTTP_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
-      - HTTPS_PROXY=transmission:${TRANSMISSION_WEBPROXY_PORT}
+      - HTTP_PROXY=transmission:${TRANSMISSION_PROXY_PORT}
+      - HTTPS_PROXY=transmission:${TRANSMISSION_PROXY_PORT}
+      - HTTP_PORT=${PROXY_BROWSER_PORT_HTTP}
+      - HTTPS_PORT=${PROXY_BROWSER_PORT_HTTPS}
     labels:
       traefik.frontend.priority: 1
       traefik.enable: true
-      traefik.port: ${PROXY_BROWSER_PORT_HTTP}
-      traefik.http.routers.browser.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.browser.entrypoints: web
-      traefik.http.routers.browser_https.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.browser_https.tls: true
-      traefik.http.routers.browser_https.entrypoints: websecure
-      traefik.http.services.browser.loadbalancer.passHostHeader: true
-      traefik.http.services.browser.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
-      traefik.http.routers.browser.middlewares: keycloakForwardAuth
+      # traefik.frontend.rule: Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)
+      # traefik.port: ${PROXY_BROWSER_PORT_HTTP}
+      # traefik.http.routers.browser.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      # traefik.http.routers.browser.service: browser
+      # traefik.http.routers.browser.entrypoints: web
+      traefik.http.routers.proxy.rule: "Host(`${PROXY_BROWSER_HOST}`)"
+      traefik.http.routers.proxy.service: proxy
+      traefik.http.routers.proxy.tls: true
+      traefik.http.routers.proxy.entrypoints: websecure
+      traefik.http.services.proxy.loadbalancer.passHostHeader: true
+      traefik.http.services.proxy.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+      # traefik.http.routers.browser.middlewares: traefik-forward-auth@docker
+      # traefik.http.routers.browser.middlewares.tls: true
+      # traefik.http.routers.browser.middlewares.trustForwardHeader: true
+      # traefik.http.routers.browser_https.middlewares: traefik-forward-auth@docker
     volumes:
       - ${PROXY_BROWSER_CONFIG_CUSTOM_FILE}:/var/www/html/proxy/custom_config.php:ro
       - ${PROXY_BROWSER_CONFIG_FILE}:/etc/apache2/sites-enabled/000-default.conf:ro
-    ports:
-      - ${PROXY_BROWSER_PORT_HTTP}:80
-    #   - ${PROXY_BROWSER_PORT_HTTPS}:443
+      - ${PROXY_BROWSER_PORTS_FILE}:/etc/apache2/ports.conf:ro
+    # ports:
+    #   - ${PROXY_BROWSER_PORT_HTTP}:${PROXY_BROWSER_PORT_HTTP}
+    #   - ${PROXY_BROWSER_PORT_HTTPS}:${PROXY_BROWSER_PORT_HTTPS}
     networks:
       - internal
 
