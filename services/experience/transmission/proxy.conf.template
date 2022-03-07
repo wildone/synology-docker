@@ -1,0 +1,18 @@
+
+server {
+    listen       ${TRANSMISSION_PORT};
+
+    access_log /dev/stdout;
+    error_log /dev/stdout;
+
+    location / {
+
+        limit_except GET POST PUT HEAD DELETE OPTIONS PATCH {
+            deny   all;
+        }
+
+        proxy_pass http://${TRANSMISSION_SUBDOMAIN_NAME}:${TRANSMISSION_PORT};     #IP of your web container
+        proxy_pass_header X-Transmission-Session-Id;
+        proxy_intercept_errors on;
+    }
+}

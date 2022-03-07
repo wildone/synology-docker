@@ -9,14 +9,32 @@ services:
     labels:
       traefik.frontend.priority: 1
       traefik.enable: true
-      traefik.port: ${TRANSMISSION_PORT}
-      traefik.http.routers.transmission.rule: "Host(`${TRANSMISSION_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.transmission.entrypoints: web
-      traefik.http.routers.transmission_https.rule: "Host(`${TRANSMISSION_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.transmission_https.tls: true
-      traefik.http.routers.transmission_https.entrypoints: websecure
-      traefik.http.services.transmission.loadbalancer.passHostHeader: true
-      traefik.http.services.transmission.loadbalancer.server.port: ${TRANSMISSION_PORT}
+    #   traefik.port: ${TRANSMISSION_PORT}
+    #   traefik.http.routers.transmission.rule: "Host(`${TRANSMISSION_HOST}`)"
+    #   traefik.http.routers.transmission.entrypoints: web
+    #   traefik.http.routers.transmission.service: transmission
+    #   traefik.http.services.transmission.loadbalancer.passHostHeader: true
+    #   traefik.http.services.transmission.loadbalancer.server.port: ${TRANSMISSION_PORT}
+
+      # traefik.http.routers.transmission.rule: "Host(`${TRANSMISSION_HOST}`)"
+      # traefik.http.routers.transmission.tls: true
+      # traefik.http.routers.transmission.entrypoints: websecure
+      # traefik.http.routers.transmission.service: transmission
+      # traefik.http.services.transmission.loadbalancer.passHostHeader: true
+      # traefik.http.services.transmission.loadbalancer.server.port: ${TRANSMISSION_PORT}
+
+      traefik.http.routers.transmission_proxy.rule: "Host(`${TRANSMISSION_PROXY_HOST}`)"
+      traefik.http.routers.transmission_proxy.tls: true
+      traefik.http.routers.transmission_proxy.entrypoints: websecure
+      traefik.http.routers.transmission_proxy.service: transmission
+      traefik.http.services.transmission_proxy.loadbalancer.passHostHeader: true
+      traefik.http.services.transmission_proxy.loadbalancer.server.port: ${TRANSMISSION_PROXY_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${TRANSMISSION_PORT}"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+      start_period: 2s
     volumes:
       - ${TRANSMISSION_DATA_PATH}:/data
     environment:
@@ -27,19 +45,52 @@ services:
       - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD?need open vpn password to work please set variable TRANSMISSION_OPENVPN_PASSWORD}
       - LOCAL_NETWORK=${TRANSMISSION_LOCAL_NETWORK}
       - TRANSMISSION_RPC_PORT=${TRANSMISSION_PORT}
-      - WEBPROXY_ENABLED=${TRANSMISSION_WEBPROXY_ENABLED}
-      - WEBPROXY_PORT=${TRANSMISSION_WEBPROXY_PORT}
+      - WEBPROXY_ENABLED=${TRANSMISSION_PROXY_ENABLED}
+      - WEBPROXY_PORT=${TRANSMISSION_PROXY_PORT}
     logging:
       driver: json-file
       options:
         max-size: 10m
-    ports:
-      - ${TRANSMISSION_PORT}:${TRANSMISSION_PORT}
-      - ${TRANSMISSION_WEBPROXY_PORT}:${TRANSMISSION_WEBPROXY_PORT}
+    # ports:
+    #   - ${TRANSMISSION_PORT}:${TRANSMISSION_PORT}
+    #   - ${TRANSMISSION_PROXY_PORT}:${TRANSMISSION_PROXY_PORT}
     cap_add:
       - NET_ADMIN
     networks:
-      - internal
+      internal:
+        aliases:
+          - ${TRANSMISSION_SUBDOMAIN_NAME}
+          - ${TRANSMISSION_HOST}
+          - ${TRANSMISSION_PROXY_HOST}
+
+  transmissionproxy:
+    image: nginx
+    volumes:
+      - ${TRANSMISSION_PROXY_CONFIG_PATH}:/etc/nginx/templates/nginx.conf.template
+    environment:
+      - TZ=${GLOBAL_TZ}
+      - TRANSMISSION_PORT=${TRANSMISSION_PORT}
+      - TRANSMISSION_SUBDOMAIN_NAME=${TRANSMISSION_SUBDOMAIN_NAME}
+      - NGINX_PORT=${TRANSMISSION_PORT}
+    depends_on:
+      - transmission
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.http.routers.transmission.rule: "Host(`${TRANSMISSION_HOST}`)"
+      traefik.http.routers.transmission.tls: true
+      traefik.http.routers.transmission.entrypoints: websecure
+      traefik.http.routers.transmission.service: transmission
+      traefik.http.services.transmission.loadbalancer.passHostHeader: true
+      traefik.http.services.transmission.loadbalancer.server.port: ${TRANSMISSION_PORT}
+    # ports:
+    #   - "8081:80"
+    #   - "8443:443"
+    networks:
+      internal:
+        aliases:
+          - ${TRANSMISSION_SUBDOMAIN_NAME}
+          - ${TRANSMISSION_SUBDOMAIN_NAME}.${DOMAIN_NAME}
 
 networks:
   internal:
