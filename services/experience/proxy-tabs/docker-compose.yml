@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+
+  proxybrowser:
+    image: node
+    restart: always
+    hostname: proxybrowser
+    command: "bash -c 'echo NPM INSTALL && npm install && npm run serve'"
+    working_dir: /source
+    volumes:
+      - ${PROXY_BROWSER_SOURCE}:/source
+    environment:
+      - TZ=${GLOBAL_TZ}
+      - HTTP_PROXY_URL="http://transmission:${TRANSMISSION_PROXY_PORT}"
+      # - HTTPS_PROXY="http://transmission:${TRANSMISSION_PROXY_PORT}"
+      # - HTTP_PORT=${PROXY_BROWSER_PORT_HTTP}
+      # - HTTPS_PORT=${PROXY_BROWSER_PORT_HTTPS}
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      # traefik.frontend.rule: Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)
+      # traefik.port: ${PROXY_BROWSER_PORT_HTTP}
+      # traefik.http.routers.browser.rule: "Host(`${PROXY_BROWSER_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      # traefik.http.routers.browser.service: browser
+      # traefik.http.routers.browser.entrypoints: web
+      traefik.http.routers.proxybrowser.rule: "Host(`${PROXY_BROWSER_HOST_BROWSER}`)"
+      traefik.http.routers.proxybrowser.service: proxy
+      traefik.http.routers.proxybrowser.tls: true
+      traefik.http.routers.proxybrowser.entrypoints: websecure
+      traefik.http.services.proxybrowser.loadbalancer.passHostHeader: true
+      # traefik.http.services.proxy.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+      traefik.http.services.proxybrowser.loadbalancer.server.port: 8843
+
+      traefik.http.routers.proxyloader.rule: "Host(`${PROXY_BROWSER_HOST_LOADER}`)"
+      traefik.http.routers.proxyloader.service: proxy
+      traefik.http.routers.proxyloader.tls: true
+      traefik.http.routers.proxyloader.entrypoints: websecure
+      traefik.http.services.proxyloader.loadbalancer.passHostHeader: true
+      # traefik.http.services.proxy.loadbalancer.server.port: ${PROXY_BROWSER_PORT_HTTP}
+      traefik.http.services.proxyloader.loadbalancer.server.port: 8844
+
+      # traefik.http.routers.browser.middlewares: traefik-forward-auth@docker
+      # traefik.http.routers.browser.middlewares.tls: true
+      # traefik.http.routers.browser.middlewares.trustForwardHeader: true
+      # traefik.http.routers.browser_https.middlewares: traefik-forward-auth@docker
+    ports:
+      - 8843:8843
+      - 8844:8844
+    #   - ${PROXY_BROWSER_PORT_HTTP}:${PROXY_BROWSER_PORT_HTTP}
+    #   - ${PROXY_BROWSER_PORT_HTTPS}:${PROXY_BROWSER_PORT_HTTPS}
+    networks:
+      - internal
+
+networks:
+  internal:
