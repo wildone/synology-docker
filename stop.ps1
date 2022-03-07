@@ -3,7 +3,7 @@ Param(
   [string]$LOG_PEFIX = "start",
   [string]$LOG_SUFFIX = ".log",
   [string]$FUNCTIONS_URI = "https://github.com/aem-design/aemdesign-docker/releases/latest/download/functions.ps1",
-  [string]$SERVICES = "$( (Get-Content ".\start-services.conf") -join " -f ")",
+  [string]$SERVICES = "$( (Get-Content ".\start-services.conf" | Where-Object {$_ -notmatch '^#.*'}) -join " -f ")",
   [string]$PORT = "5080"
 )
 
