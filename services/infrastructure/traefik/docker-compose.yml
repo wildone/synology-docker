@@ -14,11 +14,11 @@ services:
     ports:
       - ${TRAEFIK_HTTP_PORT}:${TRAEFIK_HTTP_PORT}
       - ${TRAEFIK_HTTPS_PORT}:${TRAEFIK_HTTPS_PORT}
-      - ${TRAEFIK_API_PORT}:${TRAEFIK_API_PORT}
+      # - ${TRAEFIK_API_PORT}:${TRAEFIK_API_PORT}
     command:
       - "--log.level=${TRAEFIK_LOG_LEVEL}"
       - "--accesslog=${TRAEFIK_ACCESS_LOG}"
-      - "--api.insecure=true" # Don't do that in production!
+      # - "--api.insecure=true" # Don't do that in production!
       - "--api.dashboard=true" # Don't do that in production!
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -27,19 +27,31 @@ services:
       # Entrypoints for HTTP, HTTPS, and NX (TCP + UDP)
       - "--entrypoints.web.address=:${TRAEFIK_HTTP_PORT}"
       - "--entrypoints.websecure.address=:${TRAEFIK_HTTPS_PORT}"
-      - "--entrypoints.traefik.address=:${TRAEFIK_API_PORT}"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      # - "--entrypoints.traefik.address=:${TRAEFIK_API_PORT}"
+      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       # - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
+
+      # postgres entry point
+      # - "--entryPoints.postgres.address=:${POSTGRES_PORT}"
+
+      #- --entrypoints.web.http.middlewares=traefik-forward-auth@docker
 
       # Manual keys
       - "--providers.file.directory=/etc/traefik/dynamic_conf"
       - "--providers.file.watch=true"
+      - "--pilot.token=${TRAEFIK_PILOT_TOKEN}"
+
+      #  Auth
+      # - "traefik.http.routers.whoami.middlewares=traefik-forward-auth"
+
     labels:
       traefik.frontend.priority: 1
       traefik.enable: true
-      traefik.http.routers.traefik.rule: "Host(`${TRAEFIK_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
-      traefik.http.routers.traefik.service: api@internal
-      traefik.http.services.api.loadbalancer.passHostHeader: true
+      traefik.http.routers.dashboard.rule: "Host(`${TRAEFIK_HOST}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      traefik.http.routers.dashboard.entrypoints: websecure
+      traefik.http.routers.dashboard.tls: true
+      traefik.http.routers.dashboard.service: api@internal
+      # traefik.http.services.traefik.loadbalancer.passHostHeader: true
 
 
       # # Global Redirect HTTP to HTTPS
@@ -50,7 +62,9 @@ services:
       # traefik.http.middlewares.redirect-to-https.redirectscheme.permanent: true
     environment:
       - TZ=${GLOBAL_TZ}
-
+    depends_on:
+      - "createcert"
+      - "createcertpkcs12"
     networks:
       internal:
         aliases:
@@ -78,9 +92,11 @@ services:
     command:
       - /bin/ash
       - -c
-      - "test ! -f mkcert.pfx && openssl pkcs12 -export -out mkcert.pfx -in mkcert.pem -inkey mkcert.key -certfile rootCA.pem -passout pass:${TRAEFIK_CERT_KEYPASS}"
+      - "sleep 10 && test ! -f mkcert.pfx && openssl pkcs12 -export -out mkcert.pfx -in mkcert.pem -inkey mkcert.key -certfile rootCA.pem -passout pass:${TRAEFIK_CERT_KEYPASS}"
     volumes:
       - ${TRAEFIK_CERTIFICATE_PATH}:/export
+    depends_on:
+      - "createcert"
     environment:
       - TZ=${GLOBAL_TZ}
 
