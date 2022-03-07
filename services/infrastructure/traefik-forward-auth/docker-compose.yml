@@ -1,0 +1,107 @@
+version: "3.8"
+
+services:
+
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    networks:
+      internal:
+        aliases:
+          - ${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}
+          - ${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME}
+    depends_on:
+      - keycloak
+      - traefik
+    ports:
+      - ${TRAEFIK_FORWARD_AUTH_PORT}:4181
+    environment:
+      - TZ=${GLOBAL_TZ}
+      - DEFAULT_PROVIDER=${TRAEFIK_FORWARD_AUTH_DEFAULT_PROVIDER}
+      - DEFAULT_ACTION=${TRAEFIK_FORWARD_AUTH_DEFAULT_ACTION}
+      # This is based on using the selected realm. Create a new client, this will go into your CLIENT_ID, CLIENT_SECRET details.
+      - PROVIDERS_OIDC_ISSUER_URL=${TRAEFIK_FORWARD_AUTH_PROVIDERS_OIDC_ISSUER_URL}
+      - PROVIDERS_OIDC_CLIENT_ID=${TRAEFIK_FORWARD_AUTH_PROVIDERS_OIDC_CLIENT_ID}
+      - PROVIDERS_OIDC_CLIENT_SECRET=${TRAEFIK_FORWARD_AUTH_PROVIDERS_OIDC_CLIENT_SECRET}
+      - SECRET=${TRAEFIK_FORWARD_AUTH_SECRET}
+      # - INSECURE_COOKIE=true
+      - AUTH_HOST=${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME}
+      - URL_PATH=${TRAEFIK_FORWARD_AUTH_URL_PATH}
+      - COOKIE_DOMAIN=${DOMAIN_NAME}
+      - COOKIE_NAME=${TRAEFIK_FORWARD_AUTH_COOKIE_NAME}
+      - CSRF_COOKIE_NAME=${TRAEFIK_FORWARD_AUTH_CSRF_COOKIE_NAME}
+      - LOG_LEVEL=${TRAEFIK_FORWARD_AUTH_LOG_LEVEL}
+      # https://github.com/thomseddon/traefik-forward-auth/blob/master/examples/docker-compose-oidc.yml
+      # https://github.com/thomseddon/traefik-forward-auth#user-restriction
+      #      WHITELIST: ${EMAIL}
+      #      COOKIE_SECURE: "true"
+      - LIFETIME=${TRAEFIK_FORWARD_AUTH_LIFETIME}
+    restart: always
+    labels:
+      traefik.frontend.priority: 1
+      traefik.enable: true
+      traefik.port: ${TRAEFIK_FORWARD_AUTH_PORT_INTERNAL}
+      # Define the URL to access this app
+      # traefik.http.routers.traefik-forward-auth.rule: "Host(`${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      # traefik.http.routers.traefik-forward-auth.service: traefik-forward-auth
+      # traefik.http.routers.traefik-forward-auth.entrypoints: web
+      traefik.http.routers.traefik-forward-auth_https.rule: "Host(`${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME}`)"
+      traefik.http.routers.traefik-forward-auth_https.service: traefik-forward-auth
+      traefik.http.routers.traefik-forward-auth_https.tls: true
+      traefik.http.routers.traefik-forward-auth_https.entrypoints: websecure
+      traefik.http.services.traefik-forward-auth.loadbalancer.passHostHeader: true
+
+      # traefik.http.middlewares.traefik-forward-auth.forwardauth.tls: true
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader: true
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.address: "${TRAEFIK_HTTP_MIDDLEWARE_FORWARD_ADDRESS}"
+      traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders: "X-Forwarded-User"
+      traefik.http.services.traefik-forward-auth.loadbalancer.server.port: "${TRAEFIK_FORWARD_AUTH_PORT}"
+      traefik.frontend.auth.forward.trustForwardHeader: true
+
+      # TLS is used to protect the domain
+      traefik.http.routers.traefik-forward-auth.tls: true
+
+#       # Access via HTTPS only
+#       - "traefik.http.routers.traefik-forward-auth.entrypoints=websecure"
+#       - "traefik.frontend.rule=Host:${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME},"
+#       - "traefik.frontend.headers.SSLHost=${TRAEFIK_FORWARD_AUTH_SUBDOMAIN_NAME}.${DOMAIN_NAME}"
+
+#       - "traefik.frontend.passHostHeader=true"
+#       - "traefik.frontend.headers.SSLForceHost=true"
+#       - "traefik.frontend.headers.customResponseHeaders=X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"
+#       - "traefik.frontend.headers.SSLRedirect=true"
+#       - "traefik.frontend.headers.browserXSSFilter=true"
+#       - "traefik.frontend.headers.contentTypeNosniff=true"
+#       - "traefik.frontend.headers.forceSTSHeader=true"
+#       - "traefik.frontend.headers.STSSeconds=315360000"
+#       - "traefik.frontend.headers.STSIncludeSubdomains=true"
+#       - "traefik.frontend.headers.STSPreload=true"
+#       - "traefik.frontend.headers.frameDeny=true"
+
+#       - "traefik.backend=traefik-forward-auth"
+
+#       - "traefik.frontend.auth.forward.address=${TRAEFIK_FRONTEND_AUTH_FORWARD_ADDRESS}"
+#       - "traefik.frontend.auth.forward.trustForwardHeader=true"
+#       - "traefik.frontend.auth.forward.authResponseHeaders=X-Forwarded-User"
+#       - "traefik.http.routers.traefik-forward-auth.service=traefik-forward-auth"
+#       - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=${TRAEFIK_FORWARD_AUTH_PORT}"
+#       # # TLS is used to protect the domain
+#       # - "traefik.http.routers.traefik-forward-auth.tls=true"
+#       # - "traefik.http.routers.traefik-forward-auth.tls.certresolver=leresolver"
+#       # - "traefik.http.routers.traefik-forward-auth.tls.domains[0].main=${DOMAIN_NAME}"
+#       # - "traefik.http.routers.traefik-forward-auth.tls.domains[0].sans=*.${DOMAIN_NAME}"
+#       # Forward authentication to keycloak
+#       #- "traefik.http.routers.traefik-forward-auth.middlewares=traefik-forward-auth"
+#       #- "traefik.http.routers.traefik-forward-auth.middlewares=myForwardAuth@file"
+#       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=${TRAEFIK_HTTP_MIDDLEWARE_FOPRWARD_ADDRESS}"
+# #      - "traefik.http.routers.traefik-forward-auth.middlewares=secured"
+# #      - traefik.http.middlewares.secured.chain.middlewares=https-only@docker,traefik-forward-auth@docker
+# #      - traefik.http.middlewares.https-only.redirectscheme.scheme=https
+#       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.trustForwardHeader=true"
+#       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Auth-User, X-Secret"
+# #      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User, X-WebAuth-User"
+#       - "traefik.http.middlewares.traefik-forward-auth.forwardauth.tls.insecureSkipVerify=true"
+
+
+networks:
+  internal:
+
